@@ -1,10 +1,12 @@
 package com.bogisolutions.integr.web;
 
 import com.bogisolutions.integr.model.AttendeeRegistration;
-import com.bogisolutions.integr.service.RegistrationService;
 import jakarta.validation.Valid;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.messaging.MessageChannel;
+import org.springframework.messaging.support.MessageBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,12 +20,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 public class RegistrationController {
     private static final Logger LOG = LoggerFactory.getLogger(RegistrationController.class);
 
-    private final RegistrationService registrationService;
+    private final MessageChannel registrationRequestChannel;
 
-    public RegistrationController(RegistrationService registrationService) {
-        this.registrationService = registrationService;
-        System.out.println("RegistrationController constructor");
+    public RegistrationController(@Qualifier("registrationRequest") MessageChannel registrationRequestChannel) {
+        this.registrationRequestChannel = registrationRequestChannel;
     }
+
 
     @GetMapping
     public String index(@ModelAttribute("registration") AttendeeRegistration registration) {
@@ -37,7 +39,8 @@ public class RegistrationController {
             return "index";
         }
 
-        registrationService.register(registration);
+        var message = MessageBuilder.withPayload(registration).build();
+        registrationRequestChannel.send(message);
 
         return "success";
     }
