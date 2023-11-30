@@ -14,6 +14,8 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.time.OffsetDateTime;
+
 
 @Controller
 @RequestMapping("/")
@@ -39,7 +41,9 @@ public class RegistrationController {
             return "index";
         }
 
-        var message = MessageBuilder.withPayload(registration).build();
+        var message = MessageBuilder.withPayload(registration)
+                .setHeader("dateTime", OffsetDateTime.now())
+                .build();
         registrationRequestChannel.send(message);
 
         return "success";
